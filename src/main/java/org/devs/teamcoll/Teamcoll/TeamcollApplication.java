@@ -8,5 +8,4 @@ public class TeamcollApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TeamcollApplication.class, args);
 	}
-
 }
