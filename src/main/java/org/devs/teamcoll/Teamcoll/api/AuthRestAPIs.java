@@ -47,14 +47,10 @@ public class AuthRestAPIs {
                 )
         );
 
-        User loginUser = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("No User Found"));
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = jwtProvider.generateJwtToken(authentication);
-        return ResponseEntity.ok(new JwtResponse(jwt,loginUser));
+        return ResponseEntity.ok(new JwtResponse(jwt, loginRequest.getUsername()));
     }
 
     @PostMapping("/register")
@@ -64,28 +60,11 @@ public class AuthRestAPIs {
                     HttpStatus.BAD_REQUEST);
         }
 
-        // Creating user's account
-        //Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
         roles.add(userRole);
-        /*
-        strRoles.forEach(role -> {
-            switch(role) {
-                case "admin":
-                    Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                    roles.add(adminRole);
-                    break;
-                default:
-                    Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                            .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                    roles.add(userRole);
-            }
-        });
-    `
-         */
+
         User newUser = User.builder()
                 .username(signUpRequest.getUsername())
                 .name(signUpRequest.getName())
@@ -96,6 +75,5 @@ public class AuthRestAPIs {
         userRepository.save(newUser);
 
         return new ResponseEntity<>(newUser , HttpStatus.CREATED);
-        //return ResponseEntity<User>.ok().body("User registered successfully!");
     }
 }
