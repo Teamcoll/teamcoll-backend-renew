@@ -1,25 +1,18 @@
 package org.devs.teamcoll.Teamcoll.security.jwt;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.devs.teamcoll.Teamcoll.user.User;
+
+@Setter
+@Getter
 public class JwtResponse {
     private String token;
-    private String type= "Bearer";
+    private String type = "Bearer";
+    private User user;
 
-    public JwtResponse(String accessToken) {
-        this.token = accessToken; }
-
-    public String getAccessToken() {
-        return token;
-    }
-
-    public void setAccessToken(String accessToken) {
+    public JwtResponse(String accessToken, User user) {
         this.token = accessToken;
-    }
-
-    public String getTokenType() {
-        return type;
-    }
-
-    public void setTokenType(String tokenType) {
-        this.type = tokenType;
+        this.user = user;
     }
 }

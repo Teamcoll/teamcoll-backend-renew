@@ -1,10 +1,8 @@
 package org.devs.teamcoll.Teamcoll.security.jwt;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.devs.teamcoll.Teamcoll.security.auth.AuthUserService;
+import org.devs.teamcoll.Teamcoll.security.service.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,33 +16,38 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
+
+    @Autowired
     private JwtProvider tokenProvider;
-    private AuthUserService userDetailsService;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         try {
+
             String jwt = getJwt(request);
 
             if( jwt != null && tokenProvider.validateJwtToken(jwt)) {
-                String email = tokenProvider.getEmailFromJwtToken(jwt);
+                String username = tokenProvider.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                UsernamePasswordAuthenticationToken authenticationToken
-                        = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication
+                        = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()) ;
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (Exception e) {
-            log.info("Can NOT set user authentication -> Message :{} ", e );
+            log.info("Can Not set user authentication -> Message {}", e);
         }
+
         filterChain.doFilter(request,response);
     }
 
@@ -54,7 +57,6 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
         if( authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.replace("Bearer ", "");
         }
-
         return null;
     }
 }

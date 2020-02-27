@@ -3,16 +3,14 @@ package org.devs.teamcoll.Teamcoll.user;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NaturalId;
+import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity
 public class User {
@@ -21,31 +19,28 @@ public class User {
     @Column(name = "USER_ID")
     private Long id;
 
-    @NotBlank
-    @Size(min=3, max = 50)
+    //EMAIL
     private String username;
 
-    @NaturalId
-    @NotBlank
-    @Size(max = 50)
-    @Email
-    private String email;
+    private String name;
 
-    @NotBlank
-    @Size(min=6, max = 100)
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "USER_ROLES",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
+    Set<Role> roles = new HashSet<>();
 
     @Builder
-    public User(String username, String email, String password, Set<Role> roles) {
+    public User(Long id, String username,
+                String name, String password,
+                Set<Role> roles) {
+        this.id = id;
         this.username = username;
-        this.email = email;
+        this.name = name;
         this.password = password;
         this.roles = roles;
     }
+
 }

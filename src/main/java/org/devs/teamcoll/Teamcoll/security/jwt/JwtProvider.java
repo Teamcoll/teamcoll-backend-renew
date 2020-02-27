@@ -3,37 +3,43 @@ package org.devs.teamcoll.Teamcoll.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.devs.teamcoll.Teamcoll.security.auth.AuthUser;
+import org.devs.teamcoll.Teamcoll.security.service.UserPrinciple;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Slf4j
 @Component
-public class JwtProvider  {
-    final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+public class JwtProvider {
+    private static Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public String generateJwtToken(Authentication authentication) {
+        UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 
-        AuthUser authUser = (AuthUser) authentication.getPrincipal();
-
-        return Jwts.builder()
-                .setSubject(authUser.getEmail())
-                .setIssuedAt(new java.util.Date())
-                .claim("authorities", authUser.getAuthorities())
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))//sql.Date
+        String token =  Jwts.builder()
+                .setSubject(userPrinciple.getUsername())
+                //.setIssuedAt(new java.util.Date())
+                //.setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))//sql.Date
+                .setIssuedAt(Date.from(Instant.ofEpochSecond(1466796822L)))
+                // Sat Jun 24 2116 15:33:42 GMT-0400 (EDT)
+                .setExpiration(Date.from(Instant.ofEpochSecond(4622470422L)))
                 .signWith(secretKey)
                 .compact();
-
+        log.info("TOKEN : {}", token);
+        return token;
     }
 
-    public String getEmailFromJwtToken(String token) {
+    public String getUserNameFromJwtToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
-                .getBody().getSubject();
+                .getBody()
+                .getSubject();
     }
 
     public boolean validateJwtToken(String authToken) {

@@ -1,9 +1,10 @@
 package org.devs.teamcoll.Teamcoll.security;
 
 import lombok.RequiredArgsConstructor;
-import org.devs.teamcoll.Teamcoll.security.auth.AuthUserService;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtAuthEntryPoint;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtAuthTokenFilter;
+import org.devs.teamcoll.Teamcoll.security.service.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,26 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final AuthUserService authUserService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthEntryPoint unauthorizedHandler;
 
-    @Bean
-    public JwtAuthTokenFilter jwtAuthTokenFilter() {
-        return new JwtAuthTokenFilter();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .userDetailsService(authUserService)
-                .passwordEncoder(passwordEncoder());
-    }
-
-    @Bean
-    @Override
-    protected AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
-    }
 
     @Bean
     public JwtAuthTokenFilter authenticationJwtTokenFilter() {
@@ -49,11 +33,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .cors().and().csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/", "/sign-in", "/sign-up","/h2/**").permitAll()
+        http.cors().and().csrf().disable().
+                authorizeRequests()
+                .antMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
@@ -62,6 +52,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
+
+    @Bean
+    @Override
+    protected AuthenticationManager authenticationManager() throws Exception {
+        return super.authenticationManager();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
