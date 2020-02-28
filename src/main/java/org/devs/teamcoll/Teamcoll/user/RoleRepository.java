@@ -1,4 +1,4 @@
-package org.devs.teamcoll.Teamcoll.repository;
+package org.devs.teamcoll.Teamcoll.user;
 
 import org.devs.teamcoll.Teamcoll.user.Role;
 import org.devs.teamcoll.Teamcoll.user.RoleName;

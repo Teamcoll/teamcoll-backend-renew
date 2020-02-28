@@ -3,21 +3,19 @@ package org.devs.teamcoll.Teamcoll.api;
 import lombok.RequiredArgsConstructor;
 import org.devs.teamcoll.Teamcoll.message.request.user.LoginForm;
 import org.devs.teamcoll.Teamcoll.message.request.user.SignUpForm;
-import org.devs.teamcoll.Teamcoll.repository.RoleRepository;
-import org.devs.teamcoll.Teamcoll.repository.UserRepository;
+import org.devs.teamcoll.Teamcoll.user.RoleRepository;
+import org.devs.teamcoll.Teamcoll.user.UserRepository;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtProvider;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtResponse;
 import org.devs.teamcoll.Teamcoll.user.Role;
 import org.devs.teamcoll.Teamcoll.user.RoleName;
 import org.devs.teamcoll.Teamcoll.user.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +27,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
-public class AuthRestAPIs {
+public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;

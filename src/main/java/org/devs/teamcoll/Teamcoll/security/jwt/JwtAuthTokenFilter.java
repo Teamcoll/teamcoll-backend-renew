@@ -1,5 +1,8 @@
 package org.devs.teamcoll.Teamcoll.security.jwt;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.devs.teamcoll.Teamcoll.security.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -15,9 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Slf4j
-public class JwtAuthTokenFilter extends OncePerRequestFilter {
 
+
+@Slf4j
+@Component
+public class JwtAuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtProvider tokenProvider;
 
@@ -59,4 +65,6 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package org.devs.teamcoll.Teamcoll.security;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtAuthEntryPoint;
 import org.devs.teamcoll.Teamcoll.security.jwt.JwtAuthTokenFilter;
@@ -18,7 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
