@@ -1,77 +1,53 @@
 package org.devs.teamcoll.Teamcoll.api;
 
 import lombok.RequiredArgsConstructor;
-import org.devs.teamcoll.Teamcoll.message.request.user.LoginForm;
-import org.devs.teamcoll.Teamcoll.message.request.user.SignUpForm;
-import org.devs.teamcoll.Teamcoll.user.RoleRepository;
-import org.devs.teamcoll.Teamcoll.user.UserRepository;
-import org.devs.teamcoll.Teamcoll.security.jwt.JwtProvider;
-import org.devs.teamcoll.Teamcoll.security.jwt.JwtResponse;
-import org.devs.teamcoll.Teamcoll.user.Role;
-import org.devs.teamcoll.Teamcoll.user.RoleName;
-import org.devs.teamcoll.Teamcoll.user.User;
+import org.devs.teamcoll.Teamcoll.domain.User;
+import org.devs.teamcoll.Teamcoll.dto.user.UserLoginFormRequestDto;
+import org.devs.teamcoll.Teamcoll.dto.user.UserRegisterFormRequestDto;
+import org.devs.teamcoll.Teamcoll.dto.user.UserResponseDto;
+import org.devs.teamcoll.Teamcoll.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder encoder;
-    private final JwtProvider jwtProvider;
+    private final AuthService authService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginForm loginRequest) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = jwtProvider.generateJwtToken(authentication);
-        return ResponseEntity.ok(new JwtResponse(jwt, loginRequest.getUsername()));
+    @PostMapping("register")
+    public ResponseEntity<Long> registerUser(@RequestBody UserRegisterFormRequestDto register) {
+        return new ResponseEntity<>(authService.registerUser(register), HttpStatus.CREATED);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUpRequest) {
-        if(userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return new ResponseEntity<String>("Fail -> Username is already taken!",
-                    HttpStatus.BAD_REQUEST);
+    @PostMapping("login")
+    public ResponseEntity<UserResponseDto> loginUser(@RequestBody UserLoginFormRequestDto loginForm,
+                                                     HttpServletRequest request) {
+        User loginUser = authService.getUserInfo(loginForm);
+
+        if (loginUser != null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("email", loginForm.getEmail());
         }
 
-        Set<Role> roles = new HashSet<>();
-        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-        roles.add(userRole);
+        assert loginUser != null;
 
-        User newUser = User.builder()
-                .username(signUpRequest.getUsername())
-                .name(signUpRequest.getName())
-                .password( encoder.encode(signUpRequest.getPassword()))
-                .roles(roles)
-                .build();
+        return new ResponseEntity<>(UserResponseDto.builder()
+                .id(loginUser.getId())
+                .email(loginUser.getEmail())
+                .name(loginUser.getName())
+                .build(),
+                HttpStatus.ACCEPTED);
+    }
 
-        userRepository.save(newUser);
-
-        return new ResponseEntity<>(newUser , HttpStatus.CREATED);
+    @GetMapping("logout")
+    public ResponseEntity<String> logoutUser(HttpServletRequest request) {
+        request.getSession().invalidate();
+        return ResponseEntity.ok("Logout Success");
     }
 }
