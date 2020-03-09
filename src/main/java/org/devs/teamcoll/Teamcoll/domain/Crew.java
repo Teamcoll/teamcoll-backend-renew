@@ -3,13 +3,14 @@ package org.devs.teamcoll.Teamcoll.domain;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.devs.teamcoll.Teamcoll.model.BaseTimeEntity;
 
 import javax.persistence.*;
 
 @Getter
 @NoArgsConstructor
 @Entity
-public class Crew {
+public class Crew extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crew_id")
@@ -26,14 +27,17 @@ public class Crew {
     @Column(name = "crew_name")
     private String crewname;
 
+    private String email;
+
     @Column(name = "team_name")
     private String teamname;
 
     @Builder
-    public Crew(User user, Team team, String crewname, String teaname) {
+    public Crew(User user, Team team, String crewname, String teamname, String email) {
         this.user = user;
         this.team = team;
         this.crewname = crewname;
-        this.teamname = teaname;
+        this.teamname = teamname;
+        this.email = email;
     }
 }
